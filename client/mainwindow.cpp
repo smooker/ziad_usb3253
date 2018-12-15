@@ -18,7 +18,6 @@ MainWindow::MainWindow(QWidget *parent) :
         list->last()->setProperty("id", QVariant(i));
         connect(list->last(), SIGNAL(clicked(bool)), this, SLOT(cbClicked(bool)));
     }
-
     setCentralWidget(fake);
 }
 
