@@ -3,7 +3,7 @@
 #include <QByteArray>
 
 #include "hidapi.h"
-#define report_length 34 //This number depends on your HID report length.
+#define report_length 64 //This number depends on your HID report length.
 
 hid_device *handle;
 unsigned char buf[report_length];
@@ -30,8 +30,22 @@ int main(int argc, char *argv[])
 
     DATA_OUT.clear();
     DATA_OUT.append('\x00');
-    DATA_OUT.append('\xd0');
+    DATA_OUT.append('\x00');
+//    DATA_OUT.append('\xd1');  //read input
+//    DATA_OUT.append('\x00');
+
+//    DATA_OUT.append('\xd0');    //set output
+//    DATA_OUT.append('\x00');
+//    DATA_OUT.append('\x01');
+
+    DATA_OUT.append('\xe0');    //set pwm
     DATA_OUT.append('\x01');
+    DATA_OUT.append('\x00');    //freq
+    DATA_OUT.append('\x03');
+    DATA_OUT.append('\xe8');
+    DATA_OUT.append('\x32');    //50% ratio
+    DATA_OUT.append('\x01');    // on/off
+    DATA_OUT.append('\x01');    //channel 0, 1
 
     for(int i=DATA_OUT.size();i<report_length;i++) {
         DATA_OUT.append('\x00');
@@ -41,22 +55,13 @@ int main(int argc, char *argv[])
 
 //    exit(1);
 
-    memcpy(buf, DATA_OUT, report_length); //DATA_OUT is the data to be sent.
-    hid_write(handle, buf, report_length+1);
-
-    hid_read(handle, buf, report_length);
-    DATA_IN = QByteArray(reinterpret_cast<char*>(buf), report_length); //DATA_IN is the received data
-//    printf("DI:%s\n",DATA_IN.data());
-    qDebug() << DATA_IN.toHex();
-
 //    memcpy(buf, DATA_OUT, report_length); //DATA_OUT is the data to be sent.
-//    buf[report_length]=buf[report_length-1];
-//    buf[report_length-1]=buf[report_length-2];
-//    //.
-//    //.
-//    //.
-//    buf[2]=buf[1];
-//    buf[1]=buf[0];
-//    buf[0]=0x0;
-    hid_write(handle, buf, report_length+1);
+    hid_write(handle, (const unsigned char*)DATA_OUT.data(), report_length+1);
+
+    memset(buf, 0, sizeof(buf));
+
+    hid_read_timeout(handle, buf, report_length, 100);
+
+    DATA_IN = QByteArray(reinterpret_cast<char*>(buf), report_length); //DATA_IN is the received data
+    qDebug() << DATA_IN.toHex();
 }
