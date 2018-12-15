@@ -3,7 +3,7 @@
 #include <QByteArray>
 
 #include "hidapi.h"
-#define report_length 20 //This number depends on your HID report length.
+#define report_length 34 //This number depends on your HID report length.
 
 hid_device *handle;
 unsigned char buf[report_length];
@@ -28,9 +28,26 @@ int main(int argc, char *argv[])
     }
     hid_set_nonblocking(handle, 1);
 
+    DATA_OUT.clear();
+    DATA_OUT.append('\x00');
+    DATA_OUT.append('\xd0');
+    DATA_OUT.append('\x01');
+
+    for(int i=DATA_OUT.size();i<report_length;i++) {
+        DATA_OUT.append('\x00');
+    }
+
+    qDebug() << DATA_OUT.toHex();
+
+//    exit(1);
+
+    memcpy(buf, DATA_OUT, report_length); //DATA_OUT is the data to be sent.
+    hid_write(handle, buf, report_length+1);
+
     hid_read(handle, buf, report_length);
     DATA_IN = QByteArray(reinterpret_cast<char*>(buf), report_length); //DATA_IN is the received data
-    printf("%s\n",DATA_IN.data());
+//    printf("DI:%s\n",DATA_IN.data());
+    qDebug() << DATA_IN.toHex();
 
 //    memcpy(buf, DATA_OUT, report_length); //DATA_OUT is the data to be sent.
 //    buf[report_length]=buf[report_length-1];
