@@ -1,0 +1,3 @@
+DO1 = PWM0
+DO6 = PWM1
+
